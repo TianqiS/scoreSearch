@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>成绩录入及查询系统</title>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.4.1/css/bootstrap.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <style>
+
+        body {
+            width: 300px;
+        }
+
+        .background {
+            display: block;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+            filter: alpha(opacity=40);
+            background:while;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2000;
+        }
+        .submitBox {
+            margin-top: 20px;
+            margin-left: 50px;
+            width: 300px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 150px;
+            left: 165px;
+        }
+
+        .validateBox {
+            display: none;
+        }
+
+        .message {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+<form id="submitForm" onsubmit="return false" class="submitBox">
+    <div class="form-group">
+        <label for="idCard">身份证号</label>
+        <input type="text" class="form-control" id="idCard" >
+    </div>
+    <div class="form-group">
+        <label for="name">姓名</label>
+        <input type="text" class="form-control" id="name">
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary" id="submitUserInfo">提交</button>
+    </div>
+
+</form>
+    <div class="validateBox">
+        <form id="validateSubmit" onsubmit="return false" class="submitBox">
+            <div class="validateImg"></div>
+            <div class="form-group">
+                <label for="validateCode">请输入验证码</label>
+                <input type="text" class="form-control" id="validateCode" >
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitValidateCode">提交</button>
+        </form>
+    </div>
+    <div class="spinner-border loading" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+    <div class="message"></div>
+</body>
+<script>
+    $(function() {
+        let $idCard = $('#idCard')
+        let $name = $('#name')
+        let $submitUserInfo = $('#submitUserInfo')
+        let $validateBox = $('.validateBox')
+        let validateCodeImg
+        $('.loading').hide()
+
+        $submitUserInfo.click(function(e) {
+            e.preventDefault()
+            let idCard = $idCard.val()
+            let name = $name.val()
+            $.ajax({
+                url: '/',
+                method:'post',
+                data: {
+                    idCard,
+                    name
+                },
+                beforeSend: function() {
+                    $("body").addClass('background')
+                    $('.loading').show()
+                },
+                success: function(data) {
+                    validateCodeImg = data
+                    let $validateImg = $('.validateImg')
+                    $submitUserInfo.toggleClass('disabled', true)
+                    $submitUserInfo.unbind()
+                    $validateImg.html(validateCodeImg)
+                    $validateBox.css({"display": "block"})
+                },
+                complete: function () {
+                    $('.loading').hide()
+                    $('body').removeClass('background')
+                }
+            })
+        })
+
+        let $submitValidateCode = $('#submitValidateCode')
+        let $validateCode = $('#validateCode')
+        $submitValidateCode.click(function(e) {
+            e.preventDefault()
+            $.ajax({
+                url: '/searchScore',
+                method: 'get',
+                data: {
+                    validateCode: $validateCode.val()
+                },
+                beforeSend: function() {
+                    $("body").addClass('background')
+                    $('.loading').show()
+                },
+                success: function(data) {
+                    console.log(data)
+                    $('.message').html("成绩录入成功")
+                },
+                error: function(err) {
+                    $('.message').html('信息输入错误,请刷新页面后重试')
+                },
+                complete: function () {
+                    $('.loading').hide()
+                    $('body').removeClass('background')
+                }
+            })
+        })
+    })
+</script>
+</html>

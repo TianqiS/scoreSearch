@@ -1,8 +1,15 @@
-var Tesseract = require('tesseract.js');
-var image = "./captcha.jpg";
+let tes = require('tesseract.js')
+let createWorker = tes.createWorker
 
-function tesseract(){
-    Tesseract.recognize(image)
-        .then(result => console.log(result.text))
-}
-tesseract();
+const worker = createWorker({
+    logger: m => console.log(m)
+});
+
+(async () => {
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    const { data: { text } } = await worker.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png');
+    console.log(text);
+    await worker.terminate();
+})()
